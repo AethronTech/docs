@@ -1,0 +1,40 @@
+---
+title: Audit-log en compliance
+description: Hoe Klantel tijdregistraties beveiligt voor de Sociale Inspectie
+---
+
+# Audit-log en compliance
+
+## Wat is de audit-log?
+
+Elke actie op een tijdregistratie — aanmaken, bewerken of verwijderen — laat een **onveranderlijk spoor** achter in de audit-log. Dit spoor kan niet worden aangepast of verwijderd, ook niet door een admin.
+
+## Waarom is dit nodig?
+
+De Belgische **arbeidsdealwet** (wet van 3 oktober 2022) verplicht werkgevers om arbeidstijd te registreren op een betrouwbare en controleerbare manier. Vanaf **1 januari 2027** geldt dit voor alle sectoren.
+
+De Sociale Inspectie kan bij een controle de audit-log opvragen als bewijs dat:
+- Uren correct zijn geregistreerd
+- Geen retroactieve aanpassingen zijn gedaan zonder spoor
+- Het systeem integriteitswaarborgen biedt
+
+## De audit-log raadplegen
+
+Admins kunnen de audit-log raadplegen via **Admin → Logs**:
+
+1. Log in als admin
+2. Ga naar **Admin → Logs**
+3. Filter op gebruiker, actie of periode
+
+<Note>
+Gewone gebruikers hebben geen toegang tot de volledige audit-log. Ze kunnen wel hun eigen registratiegeschiedenis bekijken.
+</Note>
+
+## Integriteitsbeveiliging
+
+Klantel gebruikt een **hash-keten** om de integriteit van de audit-log te garanderen:
+- Elke audit-entry bevat een hash van de vorige entry
+- Een wijziging in de keten zou onmiddellijk detecteerbaar zijn
+- De log is technisch append-only: entries kunnen niet worden verwijderd
+
+Dit systeem voldoet aan de vereisten voor de Sociale Inspectie 2027.

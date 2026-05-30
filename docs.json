@@ -1,34 +1,70 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "Klantel Documentatie",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#4F46E5",
+    "light": "#818CF8",
+    "dark": "#3730A3"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "pages": [
       {
-        "group": "Getting Started",
+        "group": "Aan de slag",
         "pages": [
           "index",
-          "quickstart"
+          "aan-de-slag/registratie",
+          "aan-de-slag/eerste-klant",
+          "aan-de-slag/kbo-opzoeken"
+        ]
+      },
+      {
+        "group": "Klanten",
+        "pages": [
+          "klanten/overzicht",
+          "klanten/contactpersonen"
+        ]
+      },
+      {
+        "group": "Projecten",
+        "pages": [
+          "projecten/taken-en-statussen"
+        ]
+      },
+      {
+        "group": "Tijdregistratie",
+        "pages": [
+          "tijdregistratie/timer-starten",
+          "tijdregistratie/handmatig-invoeren",
+          "tijdregistratie/audit-log"
+        ]
+      },
+      {
+        "group": "Facturatie",
+        "pages": [
+          "facturatie/peppol-export",
+          "facturatie/ubl-xml"
+        ]
+      },
+      {
+        "group": "FAQ",
+        "pages": [
+          "faq/veelgestelde-vragen"
         ]
       }
     ],
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "App openen",
+          "href": "https://app.klantel.be",
+          "icon": "arrow-up-right-from-square"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Ondersteuning",
+          "href": "mailto:support@klantel.be",
+          "icon": "envelope"
         }
       ]
     }
@@ -40,33 +76,19 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Ondersteuning",
+        "href": "mailto:support@klantel.be"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "label": "App openen",
+      "href": "https://app.klantel.be"
     }
-  },
-  "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
-    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "linkedin": "https://linkedin.com/company/klantel"
     }
   }
 }
