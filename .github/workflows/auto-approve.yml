@@ -6,45 +6,58 @@ on:
 
 jobs:
   auto-approve:
-    # Only run when all checks passed and a PR is associated
-    if: >
-      github.event.check_suite.conclusion == 'success' &&
-      github.event.check_suite.app.slug != 'aethron-bot' &&
-      toJson(github.event.check_suite.pull_requests) != '[]'
+    if: github.event.check_suite.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
-      - name: Generate token
+      - name: Generate Aethron-Bot token
         id: app-token
         uses: actions/create-github-app-token@v1
         with:
           app-id: ${{ secrets.AETHRON_BOT_APP_ID }}
           private-key: ${{ secrets.AETHRON_BOT_PRIVATE_KEY }}
 
-      - name: Auto-approve open PRs
+      - name: Find and approve open PRs for this commit
         uses: actions/github-script@v7
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
-            const prs = context.payload.check_suite.pull_requests;
-            if (!prs || prs.length === 0) {
-              console.log('No PRs linked to this check suite.');
+            const sha = context.payload.check_suite.head_sha;
+            const branch = context.payload.check_suite.head_branch;
+
+            // Find open PRs matching this head SHA or branch
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:${branch}`,
+            });
+
+            if (prs.length === 0) {
+              console.log(`No open PRs found for branch ${branch}`);
               return;
             }
 
             for (const pr of prs) {
-              // Fetch full PR to check state
-              const { data: fullPr } = await github.rest.pulls.get({
+              // Verify all check runs for this PR's head SHA are successful
+              const { data: checkRuns } = await github.rest.checks.listForRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                pull_number: pr.number,
+                ref: pr.head.sha,
               });
 
-              if (fullPr.state !== 'open') {
-                console.log(`PR #${pr.number} is not open — skipping.`);
+              const relevant = checkRuns.check_runs.filter(
+                r => r.name !== 'Auto-approve PR (Aethron-Bot)'
+              );
+              const allPassed = relevant.every(
+                r => r.status === 'completed' && (r.conclusion === 'success' || r.conclusion === 'skipped' || r.conclusion === 'neutral')
+              );
+
+              if (!allPassed) {
+                console.log(`PR #${pr.number}: not all checks passed yet — skipping`);
                 continue;
               }
 
-              // Check if already approved by this app
+              // Skip if already approved by a bot
               const { data: reviews } = await github.rest.pulls.listReviews({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -54,9 +67,8 @@ jobs:
               const alreadyApproved = reviews.some(
                 r => r.state === 'APPROVED' && r.user.type === 'Bot'
               );
-
               if (alreadyApproved) {
-                console.log(`PR #${pr.number} already approved — skipping.`);
+                console.log(`PR #${pr.number}: already approved — skipping`);
                 continue;
               }
 
