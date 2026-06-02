@@ -1,0 +1,72 @@
+name: Auto-approve PR (Aethron-Bot)
+
+on:
+  check_suite:
+    types: [completed]
+
+jobs:
+  auto-approve:
+    # Only run when all checks passed and a PR is associated
+    if: >
+      github.event.check_suite.conclusion == 'success' &&
+      github.event.check_suite.app.slug != 'aethron-bot' &&
+      toJson(github.event.check_suite.pull_requests) != '[]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.AETHRON_BOT_APP_ID }}
+          private-key: ${{ secrets.AETHRON_BOT_PRIVATE_KEY }}
+
+      - name: Auto-approve open PRs
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const prs = context.payload.check_suite.pull_requests;
+            if (!prs || prs.length === 0) {
+              console.log('No PRs linked to this check suite.');
+              return;
+            }
+
+            for (const pr of prs) {
+              // Fetch full PR to check state
+              const { data: fullPr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+              });
+
+              if (fullPr.state !== 'open') {
+                console.log(`PR #${pr.number} is not open — skipping.`);
+                continue;
+              }
+
+              // Check if already approved by this app
+              const { data: reviews } = await github.rest.pulls.listReviews({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+              });
+
+              const alreadyApproved = reviews.some(
+                r => r.state === 'APPROVED' && r.user.type === 'Bot'
+              );
+
+              if (alreadyApproved) {
+                console.log(`PR #${pr.number} already approved — skipping.`);
+                continue;
+              }
+
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                event: 'APPROVE',
+                body: '✅ All checks passed — auto-approved by Aethron-Bot.',
+              });
+
+              console.log(`✅ Approved PR #${pr.number}`);
+            }
